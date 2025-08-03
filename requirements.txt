@@ -1,0 +1,6 @@
+gradio
+loguru
+prometheus-client
+diskcache
+requests
+locust
