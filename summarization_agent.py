@@ -1,16 +1,14 @@
-import datetime, time
-import random
+import datetime
+import time
 
 import torch
-from sympy import resultant
-from sympy.stats.rv import probability
 from transformers import AutoModelForSequenceClassification, AutoTokenizer
-
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 print("Using device:", device)
 tokenizer = AutoTokenizer.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english")
 model = AutoModelForSequenceClassification.from_pretrained("distilbert-base-uncased-finetuned-sst-2-english").to(device)
+
 
 def analyze_sentiment(sentences):
     results = []
@@ -23,10 +21,12 @@ def analyze_sentiment(sentences):
 
     return results
 
+
 class SentimentAnalysisAgent:
     def __init__(self, data_source, interval=10):
         self.data_source = data_source
         self.interval = interval
+
     def run(self):
         while True:
             sentences = self.data_source()  # Call the function to get the sentences
@@ -39,6 +39,7 @@ class SentimentAnalysisAgent:
                     print(f"Sentence: {result['sentence']}, Sentiment: {result['sentiment']}\n")
             time.sleep(self.interval)
 
+
 def fetch_sentences():
     # This function should fetch sentences from a data source.
     # For demonstration, we return a static list of sentences.
@@ -50,6 +51,7 @@ def fetch_sentences():
         "There are concerns about the rising inflation rates."
     ]
     return random.sample(sample_sentences, random.randint(0, len(sample_sentences)))
+
 
 if __name__ == "__main__":
     agent = SentimentAnalysisAgent(fetch_sentences, interval=10)
