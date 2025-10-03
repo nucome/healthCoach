@@ -1,1 +1,438 @@
-﻿565656565656
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Multi-Model Comparison</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            --bg: #f4f4f4;
+            --fg: #222;
+            --accent: #2563eb;
+            --card-bg: #ffffff;
+            --border: #d4d4d4;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            padding: 1.5rem 2rem;
+            margin-bottom: 2rem;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            letter-spacing: 0.02em;
+        }
+
+        header p {
+            margin: 0.5rem 0 0;
+            color: #555;
+            font-size: 0.95rem;
+        }
+
+        .input-section {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        label {
+            font-weight: 550;
+            font-size: 0.95rem;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        textarea {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            padding: 0.75rem 1rem;
+            font: inherit;
+            transition: border 0.2s ease;
+            background: rgba(255, 255, 255, 0.9);
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+        }
+
+        button {
+            appearance: none;
+            border: none;
+            background: var(--accent);
+            color: white;
+            padding: 0.9rem 1.6rem;
+            border-radius: 999px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.1s ease, box-shadow 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button:not(:disabled):hover {
+            transform: translateY(-1px);
+            box-shadow: 0 8px 20px rgba(37, 99, 235, 0.25);
+        }
+
+        .responses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .model-card {
+            background: var(--card-bg);
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.08);
+            border: 1px solid var(--border);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .model-header {
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--border);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .model-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .model-status {
+            font-size: 0.85rem;
+            margin: 0.5rem 0 0;
+            color: #666;
+        }
+
+        .model-status.loading {
+            color: var(--accent);
+        }
+
+        .model-status.success {
+            color: #16a34a;
+        }
+
+        .model-status.error {
+            color: #b91c1c;
+        }
+
+        .model-response {
+            padding: 1.5rem;
+            min-height: 200px;
+            white-space: pre-wrap;
+            line-height: 1.6;
+            font-size: 0.9rem;
+            flex: 1;
+            overflow-y: auto;
+            max-height: 600px;
+        }
+
+        .model-response.loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid var(--accent);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        footer {
+            text-align: center;
+            padding: 2rem;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .responses-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Multi-Model Comparison</h1>
+            <p>Send the same prompt to all models simultaneously and compare responses side by side.</p>
+        </header>
+
+        <div class="input-section">
+            <label for="prompt">Prompt</label>
+            <textarea id="prompt" placeholder="Ask a question to all models..."></textarea>
+            <button id="sendBtn">Send to All Models</button>
+        </div>
+
+        <div class="responses-grid">
+            <div class="model-card">
+                <div class="model-header">
+                    <h3 class="model-name">DeepSeek R1 (Ollama)</h3>
+                    <p class="model-status" id="status-ollama">Ready</p>
+                </div>
+                <div class="model-response" id="response-ollama">Waiting for prompt...</div>
+            </div>
+
+            <div class="model-card">
+                <div class="model-header">
+                    <h3 class="model-name">Claude Sonnet 4.5</h3>
+                    <p class="model-status" id="status-anthropic">Ready</p>
+                </div>
+                <div class="model-response" id="response-anthropic">Waiting for prompt...</div>
+            </div>
+
+            <div class="model-card">
+                <div class="model-header">
+                    <h3 class="model-name">GPT-5</h3>
+                    <p class="model-status" id="status-openai">Ready</p>
+                </div>
+                <div class="model-response" id="response-openai">Waiting for prompt...</div>
+            </div>
+
+            <div class="model-card">
+                <div class="model-header">
+                    <h3 class="model-name">Gemini 2.0 Flash Exp</h3>
+                    <p class="model-status" id="status-google">Ready</p>
+                </div>
+                <div class="model-response" id="response-google">Waiting for prompt...</div>
+            </div>
+        </div>
+
+        <footer>
+            Required services: Ollama (http://localhost:11434) for local models, Proxy server (http://localhost:3000) for remote APIs.
+        </footer>
+    </div>
+
+    <script>
+        const promptInput = document.getElementById('prompt');
+        const sendButton = document.getElementById('sendBtn');
+
+        const models = [
+            { id: 'ollama', name: 'deepseek-r1:latest', type: 'ollama' },
+            { id: 'anthropic', name: 'claude-sonnet-4-5-20250929', type: 'anthropic' },
+            { id: 'openai', name: 'gpt-5', type: 'openai' },
+            { id: 'google', name: 'gemini-2.0-flash-exp', type: 'google' }
+        ];
+
+        async function sendToOllama(modelName, prompt) {
+            const response = await fetch('http://localhost:11434/api/generate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: modelName, prompt, stream: false })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (!data || typeof data.response !== 'string') {
+                throw new Error('Unexpected response payload from Ollama.');
+            }
+
+            return data.response.trim();
+        }
+
+        async function sendToAnthropic(modelName, prompt) {
+            const response = await fetch('http://localhost:3000/anthropic', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: modelName,
+                    max_tokens: 4096,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Anthropic API error ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (!data || !data.content || !data.content[0] || !data.content[0].text) {
+                throw new Error('Unexpected response from Anthropic API.');
+            }
+
+            return data.content[0].text;
+        }
+
+        async function sendToOpenAI(modelName, prompt) {
+            const response = await fetch('http://localhost:3000/openai', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    model: modelName,
+                    messages: [{ role: 'user', content: prompt }]
+                })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`OpenAI API error ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (!data || !data.choices || !data.choices[0] || !data.choices[0].message) {
+                throw new Error('Unexpected response from OpenAI API.');
+            }
+
+            return data.choices[0].message.content;
+        }
+
+        async function sendToGoogle(modelName, prompt) {
+            const response = await fetch('http://localhost:3000/google', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ model: modelName, prompt: prompt })
+            });
+
+            if (!response.ok) {
+                const errorText = await response.text();
+                throw new Error(`Google API error ${response.status}: ${errorText || response.statusText}`);
+            }
+
+            const data = await response.json();
+            if (!data || !data.candidates || !data.candidates[0] || !data.candidates[0].content || !data.candidates[0].content.parts || !data.candidates[0].content.parts[0]) {
+                throw new Error('Unexpected response from Google API.');
+            }
+
+            return data.candidates[0].content.parts[0].text;
+        }
+
+        async function queryModel(model, prompt) {
+            const statusEl = document.getElementById(`status-${model.id}`);
+            const responseEl = document.getElementById(`response-${model.id}`);
+
+            const startTime = Date.now();
+            statusEl.textContent = 'Loading...';
+            statusEl.className = 'model-status loading';
+            responseEl.innerHTML = '<div class="spinner"></div> Waiting for response...';
+            responseEl.className = 'model-response loading';
+
+            try {
+                let responseText;
+
+                switch (model.type) {
+                    case 'ollama':
+                        responseText = await sendToOllama(model.name, prompt);
+                        break;
+                    case 'anthropic':
+                        responseText = await sendToAnthropic(model.name, prompt);
+                        break;
+                    case 'openai':
+                        responseText = await sendToOpenAI(model.name, prompt);
+                        break;
+                    case 'google':
+                        responseText = await sendToGoogle(model.name, prompt);
+                        break;
+                    default:
+                        throw new Error(`Unknown model type: ${model.type}`);
+                }
+
+                const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+                statusEl.textContent = `✓ Completed in ${duration}s`;
+                statusEl.className = 'model-status success';
+                responseEl.textContent = responseText;
+                responseEl.className = 'model-response';
+            } catch (error) {
+                const duration = ((Date.now() - startTime) / 1000).toFixed(2);
+                statusEl.textContent = `✗ Failed after ${duration}s`;
+                statusEl.className = 'model-status error';
+                responseEl.textContent = `Error: ${error.message}`;
+                responseEl.className = 'model-response';
+                console.error(`${model.id} error:`, error);
+            }
+        }
+
+        async function sendPromptToAll() {
+            const prompt = promptInput.value.trim();
+
+            if (!prompt) {
+                alert('Please enter a prompt first.');
+                promptInput.focus();
+                return;
+            }
+
+            sendButton.disabled = true;
+
+            // Send to all models in parallel
+            await Promise.all(models.map(model => queryModel(model, prompt)));
+
+            sendButton.disabled = false;
+        }
+
+        sendButton.addEventListener('click', sendPromptToAll);
+        promptInput.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                sendPromptToAll();
+            }
+        });
+    </script>
+</body>
+</html>
